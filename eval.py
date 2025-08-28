@@ -244,9 +244,9 @@ def save_detailed_results(results, output_file):
 # Main evaluation code
 if __name__ == "__main__":
     # Configuration
-    model_path = "/projects/p32013/reasoning/AlphaOne/eval/GARPO/checkpoints/easy_r1/qwen3_1_7b_math_grpo_attention_attention/global_step_15/actor/huggingface"
+    model_path = "/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/easy_r1/qwen3_1_7b_math_grpo_softmax1/global_step_10/actor/huggingface"
     output_file = 'aime_evaluation_results.json'
-    max_new_tokens = 1000
+    max_new_tokens = 4096
     
     # Set device
     device = 'cuda' if torch.cuda.is_available() else 'cpu'

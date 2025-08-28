@@ -260,15 +260,16 @@ class FSDPWorker(Worker):
             if hasattr(first_attn, 'q_proj') and hasattr(first_attn.q_proj, 'weight'):
                 has_meta_tensors = first_attn.q_proj.weight.is_meta
         
-        # Only replace attention layers if we don't have meta tensors
+        #Only replace attention layers if we don't have meta tensors
         if not has_meta_tensors:
             for layer_idx in range(len(model.model.layers)):
                 old_attn = model.model.layers[layer_idx].self_attn
                 new_attn = Qwen3AttentionExtrea(
                     config=model.config,
                     layer_idx=layer_idx,
-                    softmax_fn='entmax15'
+                    softmax_fn='softmax1'
                 )
+                print("Replacing attention layer")
                 # Ensure the new attention layer has the same dtype as the model
                 new_attn = new_attn.to(dtype=torch_dtype)
                 new_attn.load_state_dict(old_attn.state_dict(), strict=False)
