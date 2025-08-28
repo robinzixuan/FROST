@@ -40,7 +40,7 @@ worker:
     dynamic_batching: true
     ulysses_size: 1
     model:
-      model_path: /projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/softmax1/final
+      model_path: /projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/attention/final
       enable_gradient_checkpointing: true
       trust_remote_code: false
       freeze_vision_tower: false
@@ -94,7 +94,7 @@ worker:
 trainer:
   max_steps: 100
   project_name: easy_r1
-  experiment_name: qwen3_1_7b_math_grpo_softmax1_math
+  experiment_name: qwen3_1_7b_math_grpo_attention_math
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 2

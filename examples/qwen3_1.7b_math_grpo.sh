@@ -14,7 +14,7 @@ export WANDB_ENABLED="true"
 
 export PYTHONUNBUFFERED=1
 
-MODEL_PATH=/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/softmax1/final  # replace it with your local file path
+MODEL_PATH=/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/attention/final  # replace it with your local file path
 
 python3 -m verl.trainer.main \
     config=examples/config.yaml \
