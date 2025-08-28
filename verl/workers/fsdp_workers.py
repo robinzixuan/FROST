@@ -40,6 +40,7 @@ from transformers import (
 from transformers.modeling_utils import no_init_weights
 
 from ..models.monkey_patch import apply_ulysses_patch
+from .Qwen_attention import Qwen3AttentionExtrea
 from ..protocol import DataProto
 from ..single_controller.base import Worker
 from ..single_controller.base.decorator import Dispatch, register
@@ -230,7 +231,21 @@ class FSDPWorker(Worker):
                 )
 
         
+        for layer_idx in range(len(model.model.layers)):
+            old_attn = model.model.layers[layer_idx].self_attn
+            new_attn = Qwen3AttentionExtrea(
+                config=model.config,
+                layer_idx=layer_idx,
+                softmax_fn='softmax1'
+            )
+            new_attn.load_state_dict(old_attn.state_dict(), strict=False)
+            model.model.layers[layer_idx].self_attn = new_attn
 
+        # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
+        # on a small vocab and want a smaller embedding size, remove this test.
+        embedding_size = model.get_input_embeddings().weight.shape[0]
+        if len(self.tokenizer) > embedding_size:
+            model.resize_token_embeddings(len(self.tokenizer))
         
 
         

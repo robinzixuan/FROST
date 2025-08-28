@@ -1,10 +1,24 @@
 # Load model directly
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from Qwen_attention import Qwen3AttentionExtrea
-tokenizer = AutoTokenizer.from_pretrained("/projects/p32013/reasoning/AlphaOne/eval/GARPO/checkpoints/easy_r1/qwen3_1_7b_math_grpo_attention_attention/global_step_15/actor/huggingface")
-model = AutoModelForCausalLM.from_pretrained("/projects/p32013/reasoning/AlphaOne/eval/GARPO/checkpoints/easy_r1/qwen3_1_7b_math_grpo_attention_attention/global_step_15/actor")
+tokenizer = AutoTokenizer.from_pretrained("/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/softmax1/final")
+model = AutoModelForCausalLM.from_pretrained("/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/softmax1/final")
 
+for layer_idx in range(len(model.model.layers)):
+    old_attn = model.model.layers[layer_idx].self_attn
+    new_attn = Qwen3AttentionExtrea(
+        config=model.config,
+        layer_idx=layer_idx,
+        softmax_fn='vanilla'
+    )
+    new_attn.load_state_dict(old_attn.state_dict(), strict=False)
+    model.model.layers[layer_idx].self_attn = new_attn
 
+# We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
+# on a small vocab and want a smaller embedding size, remove this test.
+embedding_size = model.get_input_embeddings().weight.shape[0]
+if len(tokenizer) > embedding_size:
+    model.resize_token_embeddings(len(tokenizer))
 
 messages = [
     {"role": "user", "content": "There are 9 boys and 12 girls in a class. The teacher needs to create groups with three members for their class activity. How many groups are formed?"},

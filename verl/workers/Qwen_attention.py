@@ -10,7 +10,7 @@ from transformers.modeling_utils import ALL_ATTENTION_FUNCTIONS, PreTrainedModel
 
 import torch
 from torch import nn
-from vutils import *
+from ..vutils import *
 import math
 from transformers.integrations.sdpa_attention import use_gqa_in_sdpa
 
