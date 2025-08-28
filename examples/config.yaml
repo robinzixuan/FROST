@@ -40,7 +40,7 @@ worker:
     dynamic_batching: true
     ulysses_size: 1
     model:
-      model_path: /projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/softmax1/final
+      model_path: /projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/entmax15/final
       enable_gradient_checkpointing: true
       trust_remote_code: false
       freeze_vision_tower: false
@@ -56,7 +56,7 @@ worker:
     fsdp:
       enable_full_shard: true
       enable_cpu_offload: false
-      enable_rank0_init: true
+      enable_rank0_init: false
       torch_dtype: bf16
       use_orig_params: true
 
@@ -94,7 +94,7 @@ worker:
 trainer:
   max_steps: 20
   project_name: easy_r1
-  experiment_name: qwen3_1_7b_math_grpo_softmax1
+  experiment_name: qwen3_1_7b_math_grpo_entmax15
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 2

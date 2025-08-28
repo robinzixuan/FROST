@@ -199,7 +199,7 @@ class FSDPWorker(Worker):
         elif type(self.model_config) in AutoModelForImageTextToText._model_mapping.keys():
             AutoClass = AutoModelForImageTextToText
         else:
-            auto_class = AutoModelForCausalLM
+            AutoClass = AutoModelForCausalLM
         
 
         bnb_config = BitsAndBytesConfig(
@@ -231,21 +231,7 @@ class FSDPWorker(Worker):
                 )
 
         
-        for layer_idx in range(len(model.model.layers)):
-            old_attn = model.model.layers[layer_idx].self_attn
-            new_attn = Qwen3AttentionExtrea(
-                config=model.config,
-                layer_idx=layer_idx,
-                softmax_fn='softmax1'
-            )
-            new_attn.load_state_dict(old_attn.state_dict(), strict=False)
-            model.model.layers[layer_idx].self_attn = new_attn
-
-        # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
-        # on a small vocab and want a smaller embedding size, remove this test.
-        embedding_size = model.get_input_embeddings().weight.shape[0]
-        if len(self.tokenizer) > embedding_size:
-            model.resize_token_embeddings(len(self.tokenizer))
+        
         
 
         
@@ -264,6 +250,40 @@ class FSDPWorker(Worker):
         model = cast(PreTrainedModel, model)  # lint
         model.tie_weights()  # avoid hanging
         model = model.to(torch_dtype)
+
+
+        # Check if the model has meta tensors (from init_empty_weights)
+        has_meta_tensors = False
+        if hasattr(model, 'model') and hasattr(model.model, 'layers') and len(model.model.layers) > 0:
+            # Check if the first layer's attention has meta tensors
+            first_attn = model.model.layers[0].self_attn
+            if hasattr(first_attn, 'q_proj') and hasattr(first_attn.q_proj, 'weight'):
+                has_meta_tensors = first_attn.q_proj.weight.is_meta
+        
+        # Only replace attention layers if we don't have meta tensors
+        if not has_meta_tensors:
+            for layer_idx in range(len(model.model.layers)):
+                old_attn = model.model.layers[layer_idx].self_attn
+                new_attn = Qwen3AttentionExtrea(
+                    config=model.config,
+                    layer_idx=layer_idx,
+                    softmax_fn='entmax15'
+                )
+                # Ensure the new attention layer has the same dtype as the model
+                new_attn = new_attn.to(dtype=torch_dtype)
+                new_attn.load_state_dict(old_attn.state_dict(), strict=False)
+                model.model.layers[layer_idx].self_attn = new_attn
+        else:
+            self.print_rank0("Skipping attention layer replacement due to meta tensors (FSDP init_empty_weights)")
+
+        # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
+        # on a small vocab and want a smaller embedding size, remove this test.
+        embedding_size = model.get_input_embeddings().weight.shape[0]
+        if len(self.tokenizer) > embedding_size:
+            model.resize_token_embeddings(len(self.tokenizer))
+
+
+
         if model_config.enable_gradient_checkpointing:
             model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
 

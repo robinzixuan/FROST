@@ -44,12 +44,12 @@ def main():
                         default="Qwen/Qwen3-1.7B",
                         help="Path or name of the base model checkpoint")
     parser.add_argument("--lora_name", type=str,
-                        default="/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/attention/checkpoint-5000",
+                        default="/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/entmax15/checkpoint-5000",
                         help="Path or name of the LoRA adapter")
     parser.add_argument("--output_dir", type=str,
-                        default="/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/attention/final",
+                        default="/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/entmax15/final",
                         help="Directory to save the merged model")
-    parser.add_argument("--device", type=str, default="auto",
+    parser.add_argument("--device", type=str, default="cuda",
                         help="Device to load the model on (auto, cpu, cuda, etc.)")
 
     args = parser.parse_args()
