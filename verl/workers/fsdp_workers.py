@@ -41,6 +41,8 @@ from transformers.modeling_utils import no_init_weights
 
 from ..models.monkey_patch import apply_ulysses_patch
 from .Qwen_attention import Qwen3AttentionExtrea
+from .gpt_attention import GptOssAttentionExtra
+from .Qwen2_5_attention import Qwen2AttentionExtra
 from ..protocol import DataProto
 from ..single_controller.base import Worker
 from ..single_controller.base.decorator import Dispatch, register
@@ -264,7 +266,7 @@ class FSDPWorker(Worker):
         if not has_meta_tensors:
             for layer_idx in range(len(model.model.layers)):
                 old_attn = model.model.layers[layer_idx].self_attn
-                new_attn = Qwen3AttentionExtrea(
+                new_attn = Qwen2AttentionExtra(
                     config=model.config,
                     layer_idx=layer_idx,
                     softmax_fn='softmax1'

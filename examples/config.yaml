@@ -40,7 +40,7 @@ worker:
     dynamic_batching: true
     ulysses_size: 1
     model:
-      model_path: /projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/attention/final
+      model_path: /projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/qwen25_softmax1/final
       enable_gradient_checkpointing: true
       trust_remote_code: false
       freeze_vision_tower: false
@@ -49,8 +49,8 @@ worker:
       target_modules: all-linear
       is_peft: false
     optim:
-      lr: 1.0e-6
-      weight_decay: 1.0e-2
+      lr: 2e-5
+      weight_decay: 2.0e-2
       strategy: adamw_bf16  # {adamw, adamw_bf16}
       lr_warmup_ratio: 0.0
     fsdp:
@@ -72,7 +72,7 @@ worker:
     gpu_memory_utilization: 0.6
     enforce_eager: false
     enable_chunked_prefill: false
-    tensor_parallel_size: 2
+    tensor_parallel_size: 1
     disable_tqdm: false
     val_override_config:
       temperature: 0.6
@@ -94,7 +94,7 @@ worker:
 trainer:
   max_steps: 100
   project_name: easy_r1
-  experiment_name: qwen3_1_7b_math_grpo_attention_math
+  experiment_name: gptoss_qwen25_softmax1_math_2
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 2

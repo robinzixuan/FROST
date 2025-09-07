@@ -17,6 +17,16 @@ import json
 import ray
 from omegaconf import OmegaConf
 
+# Apply MoE fallback patch before importing vLLM
+try:
+    import sys
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    from disable_moe_fallback import patch_moe_operations
+    patch_moe_operations()
+except ImportError:
+    print("Warning: Could not import MoE fallback patch")
+
 from ..single_controller.ray import RayWorkerGroup
 from ..utils.tokenizer import get_processor, get_tokenizer
 from ..workers.fsdp_workers import FSDPWorker

@@ -303,7 +303,7 @@ def format_data_for_sft(dataset):
     
     for item in dataset:
         # Transform answer format from <answer></answer> to \boxed{}
-        answer_content = item["answer"]
+        answer_content = item["generations"][0]
         if "<answer>" in answer_content and "</answer>" in answer_content:
             # Extract content between <answer> tags and wrap with \boxed{}
             start_tag = "<answer>"
@@ -319,7 +319,7 @@ def format_data_for_sft(dataset):
                 )
         
         formatted_item = {
-        "prompt": [{"role": "user", "content": item["question"]}],
+        "prompt": [{"role": "user", "content": item["problem"]}],
         "completion": [
             {"role": "assistant", "content": answer_content}
         ],
@@ -329,8 +329,8 @@ def format_data_for_sft(dataset):
     return formatted_data
 
 # Load both train and test splits
-train_dataset = load_dataset("Jax-dan/Lite-Thinking", split="train")
-test_dataset = load_dataset("Jax-dan/Lite-Thinking", split="test")
+train_dataset = load_dataset("magicslabnu/OpenR1-Math-220k-split", split="train")
+test_dataset = load_dataset("magicslabnu/OpenR1-Math-220k-split", split="test")
 
 # Format the data
 formatted_train_data = format_data_for_sft(train_dataset)
@@ -363,7 +363,7 @@ trainer = CustomSFTTrainer(
     train_dataset=train_dataset_formatted,
     eval_dataset=test_dataset_formatted,
     args=SFTConfig(
-        output_dir="checkpoints/attention_softmax1",
+        output_dir="checkpoints/attention_softmax1_math",
         do_train=True,
         do_eval=True,
         max_steps=5000,

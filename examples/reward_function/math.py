@@ -304,8 +304,8 @@ def attention_reward(response: str, prompt: str, tokenizer, model, **kwargs):
 def compute_score(
          reward_inputs: list[dict[str, Any]], 
          model_name_or_path: str = 'Qwen/Qwen3-1.7B',
-         format_weight: float = 0.1, 
-         length_weight: float = 0.3,
+         format_weight: float = 0.05, 
+         length_weight: float = 0.25,
          attention_weight: float = 0.2,
          ) -> list[dict[str, float]]:
     if not isinstance(reward_inputs, list):

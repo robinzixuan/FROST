@@ -26,7 +26,7 @@ from .transformers.qwen2_vl import (
 
 
 def apply_ulysses_patch(model_type: str) -> None:
-    if model_type in ("llama", "gemma", "gemma2", "mistral", "qwen2", "qwen3", "qwen3_moe"):
+    if model_type in ("llama", "gemma", "gemma2", "mistral", "qwen2", "qwen3", "qwen3_moe", "gpt_oss"):
         if FLASH_ATTN_USABLE:
             ALL_ATTENTION_FUNCTIONS["flash_attention_2"] = flash_attention_forward
     elif model_type in ("qwen2_vl", "qwen2_5_vl"):

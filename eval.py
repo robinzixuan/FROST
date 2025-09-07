@@ -10,6 +10,7 @@ import re
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from Qwen_attention import Qwen3AttentionExtrea
+from Qwen2_5_attention import Qwen2AttentionExtra
 import numpy as np
 from tqdm import tqdm
 import time
@@ -244,7 +245,7 @@ def save_detailed_results(results, output_file):
 # Main evaluation code
 if __name__ == "__main__":
     # Configuration
-    model_path = "/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/easy_r1/qwen3_1_7b_math_grpo_softmax1/global_step_10/actor/huggingface"
+    model_path = "/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/easy_r1/qwen25_softmax1_math/global_step_5/actor/huggingface"
     output_file = 'aime_evaluation_results.json'
     max_new_tokens = 4096
     
@@ -258,25 +259,25 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(model_path)
     
     # Apply custom attention if Qwen3AttentionExtrea is available
-    # try:
-    #     for layer_idx in range(len(model.model.layers)):
-    #         old_attn = model.model.layers[layer_idx].self_attn
-    #         new_attn = Qwen3AttentionExtrea(
-    #             config=model.config,
-    #             layer_idx=layer_idx,
-    #             softmax_fn='vanilla'
-    #         )
-    #         new_attn.load_state_dict(old_attn.state_dict(), strict=False)
-    #         model.model.layers[layer_idx].self_attn = new_attn
-    #     print("Applied custom attention mechanism")
-    # except Exception as e:
-    #     print(f"Warning: Could not apply custom attention: {e}")
+    try:
+        for layer_idx in range(len(model.model.layers)):
+            old_attn = model.model.layers[layer_idx].self_attn
+            new_attn = Qwen2AttentionExtra(
+                config=model.config,
+                layer_idx=layer_idx,
+                softmax_fn='softmax1'
+            )
+            new_attn.load_state_dict(old_attn.state_dict(), strict=False)
+            model.model.layers[layer_idx].self_attn = new_attn
+        print("Applied custom attention mechanism")
+    except Exception as e:
+        print(f"Warning: Could not apply custom attention: {e}")
     
-    # Resize embeddings if necessary
-    # embedding_size = model.get_input_embeddings().weight.shape[0]
-    # if len(tokenizer) > embedding_size:
-    #     model.resize_token_embeddings(len(tokenizer))
-    #     print(f"Resized embeddings to {len(tokenizer)}")
+    #Resize embeddings if necessary
+    embedding_size = model.get_input_embeddings().weight.shape[0]
+    if len(tokenizer) > embedding_size:
+        model.resize_token_embeddings(len(tokenizer))
+        print(f"Resized embeddings to {len(tokenizer)}")
     
     model.to(device)
     model.eval()

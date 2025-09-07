@@ -11,4 +11,4 @@ export WANDB_PROJECT="grpo-training"
 export WANDB_ENABLED="true"
 
 
-python train_sft.py
+python train_sft.py 
