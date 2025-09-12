@@ -69,7 +69,7 @@ class FSDPConfig:
     enable_cpu_offload: bool = False
     enable_rank0_init: bool = True
     use_orig_params: bool = False
-    torch_dtype: Optional[str] = None
+    dtype: Optional[str] = None
     fsdp_size: int = -1
     mp_param_dtype: str = "bf16"
     mp_reduce_dtype: str = "fp32"

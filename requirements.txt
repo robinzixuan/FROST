@@ -18,3 +18,5 @@ torchdata
 transformers>=4.51.0
 vllm>=0.8.0
 wandb
+# Python < 3.8 compatibility
+importlib_metadata>=4.0.0; python_version<"3.8"

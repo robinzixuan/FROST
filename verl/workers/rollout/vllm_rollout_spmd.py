@@ -21,6 +21,17 @@ import torch
 import torch.distributed
 from tensordict import TensorDict
 from transformers import PreTrainedTokenizer, ProcessorMixin
+import torch
+
+orig_generator = torch.Generator
+def safe_generator(device=None):
+    if device is not None and str(device) == "meta":
+        return orig_generator()  # CPU fallback
+    return orig_generator(device) if device is not None else orig_generator()
+
+torch.Generator = safe_generator
+
+
 from vllm import LLM, RequestOutput, SamplingParams
 
 from ...protocol import DataProto
@@ -87,6 +98,9 @@ class vLLMRollout(BaseRollout):
             tokenizer: the task/model tokenizer
         """
         super().__init__()
+        import os
+        # Add workaround for META device issues with vLLM
+        import torch
         self.rank = int(os.getenv("RANK", "0"))
         self.config = config
         self.pad_token_id = tokenizer.pad_token_id
@@ -103,25 +117,47 @@ class vLLMRollout(BaseRollout):
             if config.limit_images:
                 engine_kwargs["limit_mm_per_prompt"] = {"image": config.limit_images}
 
-        self.inference_engine = LLM(
-            model=model_path,
-            skip_tokenizer_init=False,
-            trust_remote_code=config.trust_remote_code,
-            load_format="dummy",
-            dtype=PrecisionType.to_str(PrecisionType.to_dtype(config.dtype)),
-            seed=config.seed,
-            max_model_len=config.max_model_len or config.prompt_length + config.response_length,
-            distributed_executor_backend="external_launcher",
-            tensor_parallel_size=config.tensor_parallel_size,
-            gpu_memory_utilization=config.gpu_memory_utilization,
-            max_num_batched_tokens=config.max_num_batched_tokens,
-            disable_log_stats=config.disable_log_stats,
-            enforce_eager=config.enforce_eager,
-            disable_custom_all_reduce=True,
-            enable_chunked_prefill=config.enable_chunked_prefill,
-            enable_sleep_mode=True,
-            **engine_kwargs,
-        )
+        
+        
+        
+        # Set environment variable to avoid META device issues
+        os.environ["VLLM_USE_MODELSCOPE"] = "False"
+        os.environ["VLLM_ATTENTION_BACKEND"] = "FLASHINFER"  # Use more stable backend
+        
+        original_generator = torch.Generator
+        
+        def safe_generator(device=None):
+            """Safe generator that handles META device by falling back to CPU"""
+            if device is not None and str(device) == "meta":
+                return original_generator()  # CPU fallback for META device
+            return original_generator(device) if device is not None else original_generator()
+        
+        # Temporarily patch torch.Generator to handle META device
+        torch.Generator = safe_generator
+        
+        try:
+            self.inference_engine = LLM(
+                model=model_path,
+                skip_tokenizer_init=False,
+                trust_remote_code=config.trust_remote_code,
+                load_format="auto",  # Changed from "dummy" to "auto" to avoid META device issues
+                dtype=PrecisionType.to_str(PrecisionType.to_dtype(config.dtype)),
+                seed=config.seed,
+                max_model_len=config.max_model_len or config.prompt_length + config.response_length,
+                distributed_executor_backend="external_launcher",
+                tensor_parallel_size=config.tensor_parallel_size,
+                gpu_memory_utilization=config.gpu_memory_utilization,
+                max_num_batched_tokens=config.max_num_batched_tokens,
+                disable_log_stats=config.disable_log_stats,
+                enforce_eager=config.enforce_eager,
+                disable_custom_all_reduce=True,
+                enable_chunked_prefill=config.enable_chunked_prefill,
+                enable_sleep_mode=True,
+                **engine_kwargs,
+            )
+        finally:
+            # Restore original torch.Generator
+            torch.Generator = original_generator
 
         # Offload vllm model to reduce peak memory usage
         self.inference_engine.sleep(level=1)

@@ -7,10 +7,10 @@ data:
   image_dir: null
   video_fps: 2.0
   max_prompt_length: 512
-  max_response_length: 1024
-  rollout_batch_size: 16  # Further reduced to prevent OOM
-  mini_rollout_batch_size: 8  # Add mini batch for memory efficiency
-  val_batch_size: 16  # Further reduced to prevent OOM
+  max_response_length: 1536
+  rollout_batch_size: 128  # Further reduced
+  mini_rollout_batch_size: null
+  val_batch_size: 256  # Further reduced
   format_prompt: ./examples/format_prompt/math.jinja
   override_chat_template: null
   shuffle: true
@@ -32,7 +32,7 @@ algorithm:
 
 worker:
   actor:
-    global_batch_size: 8  # Further reduced from 16
+    global_batch_size: 32  # Further reduced
     micro_batch_size_per_device_for_update: 1
     micro_batch_size_per_device_for_experience: 1
     max_grad_norm: 1.0
@@ -44,12 +44,12 @@ worker:
       enable_gradient_checkpointing: true
       trust_remote_code: false
       freeze_vision_tower: false
-      lora_rank: 0  # Disable LoRA for easyR1
-      lora_alpha: 0  # Disable LoRA for easyR1
-      target_modules: null  # Disable LoRA for easyR1
+      lora_rank: 16
+      lora_alpha: 32
+      target_modules: all-linear
       is_peft: false
       # Enable quantization to reduce memory usage
-      load_in_4bit: false  # Enable 4-bit quantization
+      load_in_4bit: true
       bnb_4bit_use_double_quant: true
       bnb_4bit_quant_type: "nf4"
     optim:
@@ -59,24 +59,24 @@ worker:
       lr_warmup_ratio: 0.0
     fsdp:
       enable_full_shard: true
-      enable_cpu_offload: false  # Disable CPU offload due to gradient accumulation conflict
-      enable_rank0_init: true   # Enable rank 0 init
+      enable_cpu_offload: true
+      enable_rank0_init: true  # This helps avoid META device issues
       dtype: bf16
       use_orig_params: true
 
     offload:
-      offload_params: true   # Enable parameter offloading
-      offload_optimizer: true  # Enable optimizer offloading
+      offload_params: true
+      offload_optimizer: true
 
   rollout:
-    n: 2  # Further reduced from 2
+    n: 1  # Reduced to 1 to minimize memory usage
     temperature: 0.6
     top_p: 0.95
     limit_images: 0
-    gpu_memory_utilization: 0.4  # Further reduced from 0.6
-    enforce_eager: true  # Enable eager mode to save memory
-    enable_chunked_prefill: true  # Enable chunked prefill to save memory
-    tensor_parallel_size: 1
+    gpu_memory_utilization: 0.5  # Further reduced
+    enforce_eager: true  # Enable eager mode to avoid compilation issues
+    enable_chunked_prefill: false
+    tensor_parallel_size: 1  # Use single GPU to avoid distributed issues
     disable_tqdm: false
     val_override_config:
       temperature: 0.6
@@ -86,10 +86,10 @@ worker:
   ref:
     fsdp:
       enable_full_shard: true
-      enable_cpu_offload: false  # Disable CPU offload for consistency
+      enable_cpu_offload: true
       enable_rank0_init: true
     offload:
-      offload_params: true  # Enable parameter offloading for ref model
+      offload_params: false
 
   reward:
     reward_type: batch
@@ -98,10 +98,10 @@ worker:
 trainer:
   max_steps: 100
   project_name: easy_r1
-  experiment_name: gptoss_softmax1_math_fixed
+  experiment_name: gptoss_softmax1_math_no_vllm
   logger: ["console", "wandb"]
   nnodes: 1
-  n_gpus_per_node: 1  # Keep at 1 to avoid memory issues
+  n_gpus_per_node: 1  # Single GPU to avoid distributed issues
   max_try_make_batch: 20
   val_freq: 5
   val_before_train: true

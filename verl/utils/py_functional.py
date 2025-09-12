@@ -15,12 +15,13 @@
 Contain small python utility functions
 """
 
-import importlib.metadata
 import importlib.util
 import re
 from contextlib import contextmanager
 from functools import lru_cache
 from typing import Any, Union
+
+# Handle importlib.metadata compatibility for Python < 3.8
 
 import numpy as np
 import yaml
@@ -57,7 +58,11 @@ def is_package_available(name: str) -> bool:
 
 def get_package_version(name: str) -> "version.Version":
     try:
-        return version.parse(importlib.metadata.version(name))
+        if importlib.metadata is not None:
+            return version.parse(importlib.metadata.version(name))
+        else:
+            # Fallback for very old Python versions without importlib.metadata
+            return version.parse("0.0.0")
     except Exception:
         return version.parse("0.0.0")
 

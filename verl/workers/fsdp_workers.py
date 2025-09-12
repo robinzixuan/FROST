@@ -191,10 +191,10 @@ class FSDPWorker(Worker):
             apply_ulysses_patch(self.model_config.model_type)
             self.print_rank0("Ulysses patch applied!")
 
-        if fsdp_config.torch_dtype is None:
+        if fsdp_config.dtype is None:
             torch_dtype = torch.float32 if role != "ref" else torch.bfloat16
         else:
-            torch_dtype = PrecisionType.to_dtype(fsdp_config.torch_dtype)
+            torch_dtype = PrecisionType.to_dtype(fsdp_config.dtype)
 
         if role == "critic":
             AutoClass = AutoModelForTokenClassification
@@ -206,7 +206,7 @@ class FSDPWorker(Worker):
 
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=model_config.load_in_4bit,
-            load_in_8bit=model_config.load_in_4bit,
+            load_in_8bit=model_config.load_in_8bit,
             bnb_4bit_use_double_quant=model_config.bnb_4bit_use_double_quant,
             bnb_4bit_quant_type=model_config.bnb_4bit_quant_type,
         )
@@ -215,7 +215,7 @@ class FSDPWorker(Worker):
             model = AutoClass.from_pretrained(
                 model_config.model_path,
                 config=self.model_config,
-                torch_dtype=torch_dtype,
+                dtype=torch_dtype,
                 attn_implementation="eager",
                 device_map="cpu" if fsdp_config.enable_rank0_init else "cuda",
                 low_cpu_mem_usage=True,
@@ -226,7 +226,7 @@ class FSDPWorker(Worker):
             with no_init_weights(), init_empty_weights():
                 model = AutoClass.from_config(
                     self.model_config,
-                    torch_dtype=torch_dtype,
+                    dtype=torch_dtype,
                     attn_implementation="eager",
                     trust_remote_code=model_config.trust_remote_code,
                     #quantization_config=bnb_config,

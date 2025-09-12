@@ -7,10 +7,10 @@ data:
   image_dir: null
   video_fps: 2.0
   max_prompt_length: 512
-  max_response_length: 1024
-  rollout_batch_size: 16  # Further reduced to prevent OOM
-  mini_rollout_batch_size: 8  # Add mini batch for memory efficiency
-  val_batch_size: 16  # Further reduced to prevent OOM
+  max_response_length: 1536
+  rollout_batch_size: 512  # equivalent to verl's data.train_batch_size
+  mini_rollout_batch_size: null  # equivalent to verl's data.gen_batch_size
+  val_batch_size: 1024
   format_prompt: ./examples/format_prompt/math.jinja
   override_chat_template: null
   shuffle: true
@@ -25,16 +25,16 @@ algorithm:
   use_kl_loss: true
   kl_penalty: low_var_kl
   kl_coef: 1.0e-2
-  online_filtering: false
+  online_filtering: false  # dapo filter groups
   filter_key: overall
   filter_low: 0.01
   filter_high: 0.99
 
 worker:
   actor:
-    global_batch_size: 8  # Further reduced from 16
-    micro_batch_size_per_device_for_update: 1
-    micro_batch_size_per_device_for_experience: 1
+    global_batch_size: 128  # equivalent to verl's actor.ppo_mini_batch_size
+    micro_batch_size_per_device_for_update: 1  # equivalent to verl's actor.ppo_micro_batch_size_per_gpu
+    micro_batch_size_per_device_for_experience: 2  # equivalent to verl's rollout.log_prob_micro_batch_size_per_gpu
     max_grad_norm: 1.0
     padding_free: true
     dynamic_batching: true
@@ -44,38 +44,34 @@ worker:
       enable_gradient_checkpointing: true
       trust_remote_code: false
       freeze_vision_tower: false
-      lora_rank: 0  # Disable LoRA for easyR1
-      lora_alpha: 0  # Disable LoRA for easyR1
-      target_modules: null  # Disable LoRA for easyR1
+      lora_rank: 16
+      lora_alpha: 32
+      target_modules: all-linear
       is_peft: false
-      # Enable quantization to reduce memory usage
-      load_in_4bit: false  # Enable 4-bit quantization
-      bnb_4bit_use_double_quant: true
-      bnb_4bit_quant_type: "nf4"
     optim:
       lr: 2e-5
       weight_decay: 2.0e-2
-      strategy: adamw_bf16
+      strategy: adamw_bf16  # {adamw, adamw_bf16}
       lr_warmup_ratio: 0.0
     fsdp:
       enable_full_shard: true
-      enable_cpu_offload: false  # Disable CPU offload due to gradient accumulation conflict
-      enable_rank0_init: true   # Enable rank 0 init
+      enable_cpu_offload: false
+      enable_rank0_init: false
       dtype: bf16
       use_orig_params: true
 
     offload:
-      offload_params: true   # Enable parameter offloading
-      offload_optimizer: true  # Enable optimizer offloading
+      offload_params: true  # true: more CPU memory; false: more GPU memory
+      offload_optimizer: true  # true: more CPU memory; false: more GPU memory
 
   rollout:
-    n: 2  # Further reduced from 2
+    n: 5
     temperature: 0.6
     top_p: 0.95
     limit_images: 0
-    gpu_memory_utilization: 0.4  # Further reduced from 0.6
-    enforce_eager: true  # Enable eager mode to save memory
-    enable_chunked_prefill: true  # Enable chunked prefill to save memory
+    gpu_memory_utilization: 0.95
+    enforce_eager: false
+    enable_chunked_prefill: false
     tensor_parallel_size: 1
     disable_tqdm: false
     val_override_config:
@@ -86,10 +82,10 @@ worker:
   ref:
     fsdp:
       enable_full_shard: true
-      enable_cpu_offload: false  # Disable CPU offload for consistency
+      enable_cpu_offload: true  # true: more CPU memory; false: more GPU memory
       enable_rank0_init: true
     offload:
-      offload_params: true  # Enable parameter offloading for ref model
+      offload_params: false
 
   reward:
     reward_type: batch
@@ -98,17 +94,17 @@ worker:
 trainer:
   max_steps: 100
   project_name: easy_r1
-  experiment_name: gptoss_softmax1_math_fixed
+  experiment_name: gptoss_softmax1_math
   logger: ["console", "wandb"]
   nnodes: 1
-  n_gpus_per_node: 1  # Keep at 1 to avoid memory issues
-  max_try_make_batch: 20
-  val_freq: 5
+  n_gpus_per_node: 2
+  max_try_make_batch: 20  # -1 means no limit
+  val_freq: 5  # -1 to disable
   val_before_train: true
   val_only: false
   val_generations_to_log: 3
-  save_freq: 5
-  save_limit: 3
+  save_freq: 5  # -1 to disable
+  save_limit: 3  # -1 to disable
   save_model_only: false
   save_checkpoint_path: null
   load_checkpoint_path: null

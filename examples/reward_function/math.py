@@ -245,7 +245,10 @@ def length_reward(response: str, answer: str, tokenizer, **kwargs):
         penalty = min(0.9, (num_tokens - budget) * 0.001)
         reward = max(0.1, 1 - penalty)
         
-    
+    answer = extract_boxed_content(response)
+    if not grade_answer(answer, ground_truth):
+        reward = 0
+
     return reward
 
 
