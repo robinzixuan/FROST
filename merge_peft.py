@@ -41,13 +41,13 @@ def merge_lora_with_model(model_name, lora_name, output_dir, device="auto"):
 def main():
     parser = argparse.ArgumentParser(description="Merge a base model checkpoint with a LoRA adapter")
     parser.add_argument("--model_name", type=str,
-                        default="Qwen/Qwen2.5-Math-1.5B-Instruct",
+                        default="microsoft/Phi-4-reasoning",
                         help="Path or name of the base model checkpoint")
     parser.add_argument("--lora_name", type=str,
-                        default="/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/qwen25_softmax1/checkpoint-5000",
+                        default="/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/phi4_entmax15/checkpoint-5000",
                         help="Path or name of the LoRA adapter")
     parser.add_argument("--output_dir", type=str,
-                        default="/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/qwen25_softmax1/final",
+                        default="/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/phi4_entmax15/final",
                         help="Directory to save the merged model")
     parser.add_argument("--device", type=str, default="cuda",
                         help="Device to load the model on (auto, cpu, cuda, etc.)")

@@ -5,17 +5,18 @@ import json
 from Qwen_attention import Qwen3AttentionExtrea
 from Qwen2_5_attention import Qwen2AttentionExtra
 from gpt_attention import GptOssAttentionExtra
+from phi3_attention import Phi3AttentionExtra
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, Mxfp4Config
 import torch
 from peft import prepare_model_for_kbit_training
 import torch.utils.checkpoint
 torch.utils.checkpoint.use_reentrant = False
 
-config = AutoConfig.from_pretrained("openai/gpt-oss-20b")
+config = AutoConfig.from_pretrained("microsoft/Phi-4-reasoning")
 
 quantization_config = Mxfp4Config(dequantize=True)
 
-model = AutoModelForCausalLM.from_pretrained("openai/gpt-oss-20b",
+model = AutoModelForCausalLM.from_pretrained("microsoft/Phi-4-reasoning",
                                             config=config,
                                             torch_dtype=torch.bfloat16,
                                             attn_implementation="eager",
@@ -24,7 +25,7 @@ model = AutoModelForCausalLM.from_pretrained("openai/gpt-oss-20b",
                                             trust_remote_code=True,
                                             quantization_config=quantization_config,
                                             )
-tokenizer = AutoTokenizer.from_pretrained("openai/gpt-oss-20b")
+tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-4-reasoning")
 
 
 # for layer_idx in range(len(model.model.layers)):
@@ -51,10 +52,10 @@ tokenizer = AutoTokenizer.from_pretrained("openai/gpt-oss-20b")
 
 for layer_idx in range(len(model.model.layers)):
     old_attn = model.model.layers[layer_idx].self_attn
-    new_attn = GptOssAttentionExtra(
+    new_attn = Phi3AttentionExtra(
         config=model.config,
         layer_idx=layer_idx,
-        softmax_fn='softmax1'
+        softmax_fn='entmax15'
     )
     new_attn.load_state_dict(old_attn.state_dict(), strict=False)
     model.model.layers[layer_idx].self_attn = new_attn
@@ -139,12 +140,12 @@ trainer = SFTTrainer(
     train_dataset=train_dataset_formatted,
     eval_dataset=test_dataset_formatted,
     args=SFTConfig(
-        output_dir="checkpoints/gptoss_softmax1",
+        output_dir="checkpoints/phi4_entmax15",
         do_train=True,
         do_eval=True,
         max_steps=5000,
-        per_device_train_batch_size=1,
-        per_device_eval_batch_size=1,
+        per_device_train_batch_size=2,
+        per_device_eval_batch_size=2,
         gradient_accumulation_steps=8,
         learning_rate=1e-5,
         bf16=True,
@@ -153,7 +154,7 @@ trainer = SFTTrainer(
         r=2,
         lora_alpha=4,
         lora_dropout=0.05,
-        target_modules=['q_proj', 'k_proj']
+        target_modules=['qkv_proj']
     )
 )
 

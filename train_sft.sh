@@ -11,4 +11,4 @@ export WANDB_PROJECT="grpo-training"
 export WANDB_ENABLED="true"
 
 
-python train_sft.py 
+/projects/p32013/conda_envs/vllm/bin/python3.10 train_sft2.py 
