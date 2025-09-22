@@ -13,6 +13,6 @@ export VLLM_WORKER_MULTIPROC_METHOD=spawn
 
 conda activate vllm
 
-/projects/p32013/conda_envs/vllm/bin/python3.10 -u inference.py --model /projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/gptoss_softmax1/final --data_name minerva --output_path results/oss-softmax1 --batch_size 4 --reasoning 
-# /projects/p32013/conda_envs/vllm/bin/python3.10 -u TALE-EP.py --data_name GSM8K-Test --model openai/gpt-oss-20b
+# /projects/p32013/conda_envs/vllm/bin/python3.10 -u inference.py --model /projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/gptoss_softmax1/final --data_name AIME --output_path results/oss-softmax1 --batch_size 4 --reasoning 
+/projects/p32013/conda_envs/vllm/bin/python3.10 -u TALE-EP.py --data_name AIME --model openai/gpt-oss-20b
 # /projects/p32013/conda_envs/vllm/bin/python3.10 entropy.py
