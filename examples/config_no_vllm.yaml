@@ -40,7 +40,7 @@ worker:
     dynamic_batching: true
     ulysses_size: 1
     model:
-      model_path: /projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/gptoss_softmax1/final
+      model_path: /projects/pxxxx/reasoning/AlphaOne/eval/GARPO1/checkpoints/gptoss_softmax1/final
       enable_gradient_checkpointing: true
       trust_remote_code: false
       freeze_vision_tower: false

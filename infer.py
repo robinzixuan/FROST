@@ -2,8 +2,8 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from Qwen_attention import Qwen3AttentionExtrea
 from Qwen2_5_attention import Qwen2AttentionExtra
-tokenizer = AutoTokenizer.from_pretrained("/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/easy_r1/qwen25_softmax1_math/global_step_5/actor/huggingface")
-model = AutoModelForCausalLM.from_pretrained("/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/easy_r1/qwen25_softmax1_math/global_step_5/actor/huggingface")
+tokenizer = AutoTokenizer.from_pretrained("/projects/pxxxx/reasoning/AlphaOne/eval/GARPO1/checkpoints/easy_r1/qwen25_softmax1_math/global_step_5/actor/huggingface")
+model = AutoModelForCausalLM.from_pretrained("/projects/pxxxx/reasoning/AlphaOne/eval/GARPO1/checkpoints/easy_r1/qwen25_softmax1_math/global_step_5/actor/huggingface")
 
 for layer_idx in range(len(model.model.layers)):
     old_attn = model.model.layers[layer_idx].self_attn

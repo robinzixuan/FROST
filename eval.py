@@ -245,7 +245,7 @@ def save_detailed_results(results, output_file):
 # Main evaluation code
 if __name__ == "__main__":
     # Configuration
-    model_path = "/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/easy_r1/qwen25_softmax1_math/global_step_5/actor/huggingface"
+    model_path = "/projects/pxxxx/reasoning/AlphaOne/eval/GARPO1/checkpoints/easy_r1/qwen25_softmax1_math/global_step_5/actor/huggingface"
     output_file = 'aime_evaluation_results.json'
     max_new_tokens = 4096
     

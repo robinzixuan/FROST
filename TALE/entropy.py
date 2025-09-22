@@ -68,7 +68,7 @@ def average_sentence_entropy(jsonl_path: str, model, tokenizer):
 if __name__ == "__main__":
     from transformers import AutoModelForCausalLM, AutoTokenizer
     
-    model_name = "/projects/p32013/reasoning/AlphaOne/eval/GARPO1/checkpoints/phi4_vanilla/final"  # you can replace with your model
+    model_name = "/projects/pxxxx/reasoning/AlphaOne/eval/GARPO1/checkpoints/phi4_vanilla/final"  # you can replace with your model
     model = AutoModelForCausalLM.from_pretrained(model_name, attn_implementation="eager",)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     
@@ -86,6 +86,6 @@ if __name__ == "__main__":
     if len(tokenizer) > embedding_size:
         model.resize_token_embeddings(len(tokenizer))
 
-    path = "/projects/p32013/reasoning/AlphaOne/eval/TALE/results/softmax/Phi4/AIME/output_with_reasoning.jsonl"  # replace with your file
+    path = "/projects/pxxxx/reasoning/AlphaOne/eval/TALE/results/softmax/Phi4/AIME/output_with_reasoning.jsonl"  # replace with your file
     avg_entropy = average_sentence_entropy(path, model, tokenizer)
     print(f"Average Sentence Entropy (token-based): {avg_entropy:.4f}")
