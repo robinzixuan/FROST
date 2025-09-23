@@ -28,6 +28,7 @@ class HuggingFaceModel:
         # Import necessary modules
         from transformers import AutoModelForCausalLM, AutoTokenizer
         from phi3_attention import Phi3AttentionExtra
+        from gpt_attention import GptOssAttentionExtra
         import torch
 
         # Monkey patch inside the HF model class
