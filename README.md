@@ -77,7 +77,6 @@ We appreciate the open-source community for their valuable code and efforts.
 
 ## Citation
 If you use FROST in your work, please kindly cite it:
-(Placeholder for citation)
 
 ```bibtex
 @article{luo2026frost,
