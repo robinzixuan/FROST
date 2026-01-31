@@ -1,5 +1,5 @@
-# FROST
-
+# FROST: Filtering Reasoning Outliers with Attention for Efficient Reasoning
+The official implementation of [Filtering Reasoning Outliers with Attention for Efficient Reasoning](https://openreview.net/forum?id=a9dngZLqGS).
 ## Contents
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
@@ -42,7 +42,7 @@ dataset/
 ## Usage
 
 ### 1. Preprocessing
-(If there are specific preprocessing scripts, list them here. Based on the file list, you might need to run specific setup or data preparation steps.)
+For fine-tuning, you must explicitly define a custom attention function; at present, we support only the GPT-OSS and Phi-4-Reasoning models.
 
 ### 2. Training
 You can train the model using the provided scripts. For experimental runs, use `train_sft.sh` which launches the training process.
