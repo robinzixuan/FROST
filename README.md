@@ -79,11 +79,13 @@ We appreciate the open-source community for their valuable code and efforts.
 If you use FROST in your work, please kindly cite it:
 
 ```bibtex
-@article{luo2026frost,
-  title={FROST: Filtering Reasoning Outliers with Attention for Efficient Reasoning},
-  author={Luo, Haozheng and Jiang, Zhuolin and Hasan, Md Zahid and Chen, Yan and Sarkar, Soumalya},
-  journal={arXiv preprint arXiv:2601.19001},
-  year={2026}
+@inproceedings{
+luo2026frost,
+title={{FROST}: Filtering Reasoning Outliers with Attention for Efficient Reasoning},
+author={Haozheng Luo and Zhuolin Jiang and Md Zahid Hasan and Yan Chen and Soumalya Sarkar},
+booktitle={The Fourteenth International Conference on Learning Representations},
+year={2026},
+url={https://openreview.net/forum?id=a9dngZLqGS}
 }
 ```
 
